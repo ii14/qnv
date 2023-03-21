@@ -1,0 +1,55 @@
+cmake_minimum_required(VERSION 3.25)
+project(qnv VERSION 0.1.0 LANGUAGES CXX)
+
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "CMAKE_BUILD_TYPE not specified, defaulting to Debug")
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+        "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+option(BUILD_TESTS  "Build tests" OFF)
+option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
+option(ENABLE_ASAN  "Enable address sanitizer" OFF)
+option(ENABLE_TSAN  "Enable thread sanitizer" OFF)
+
+add_subdirectory(dep/msgpack-c msgpack EXCLUDE_FROM_ALL SYSTEM)
+if(BUILD_TESTS)
+    add_subdirectory(dep/Catch2 Catch2 EXCLUDE_FROM_ALL SYSTEM)
+endif()
+
+if(ENABLE_ASAN AND ENABLE_TSAN)
+    message(FATAL_ERROR "ASAN and TSAN are not compatible")
+endif()
+if(ENABLE_UBSAN OR ENABLE_ASAN OR ENABLE_TSAN)
+    add_compile_options(
+        -fno-omit-frame-pointer
+        -fno-optimize-sibling-calls)
+endif()
+if(ENABLE_UBSAN)
+    add_compile_options(-fsanitize=undefined)
+    add_link_options(-fsanitize=undefined)
+endif()
+if(ENABLE_ASAN)
+    add_compile_options(-fsanitize=address)
+    add_link_options(-fsanitize=address)
+endif()
+if(ENABLE_TSAN)
+    add_compile_options(-fsanitize=thread)
+    add_link_options(-fsanitize=thread)
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_AUTOMOC ON)
+
+add_compile_options(-Wall -Wextra)
+
+find_package(Qt5 REQUIRED COMPONENTS Core Quick QuickControls2 Widgets)
+add_subdirectory(src/msgpack_view msgpack_view)
+add_subdirectory(src/qnv qnv)
+add_subdirectory(src/gen_api gen_api)
+if(BUILD_TESTS)
+    add_subdirectory(test test)
+endif()

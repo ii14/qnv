@@ -1,0 +1,6 @@
+[submodule "dep/msgpack-c"]
+	path = dep/msgpack-c
+	url = https://github.com/msgpack/msgpack-c.git
+[submodule "dep/Catch2"]
+	path = dep/Catch2
+	url = https://github.com/catchorg/Catch2.git
