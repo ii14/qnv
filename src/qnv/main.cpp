@@ -3,6 +3,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
+#include "qnv/Config.hpp"
 #include "qnv/Grid.hpp"
 #include "qnv/GridRenderer.hpp"
 #include "qnv/GridList.hpp"
@@ -47,7 +48,7 @@ int main(int argc, char** argv)
     ctx->setContextProperty("gNeovim", nvim);
 
     // TODO: Build option to compile QRC or load QML at runtime
-    const QUrl url { "../qml/main.qml" };
+    const QUrl url { Config::runtimePath() + "/qml/main.qml" };
     QObject::connect(
             &engine, &QQmlApplicationEngine::objectCreated, &app,
             [url](QObject* obj, const QUrl& objUrl) {

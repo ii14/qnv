@@ -8,6 +8,11 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
         "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
+if(NOT RUNTIME_PATH)
+    set(RUNTIME_PATH "${CMAKE_CURRENT_SOURCE_DIR}/share" CACHE PATH "Runtime path" FORCE)
+endif()
+message(STATUS "Runtime path: ${RUNTIME_PATH}")
+
 option(BUILD_TESTS  "Build tests" OFF)
 option(ENABLE_UBSAN "Enable undefined behavior sanitizer" OFF)
 option(ENABLE_ASAN  "Enable address sanitizer" OFF)

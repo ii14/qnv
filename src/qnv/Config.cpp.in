@@ -1,0 +1,18 @@
+#include "qnv/Config.hpp"
+
+#include <QDir>
+#include <QDebug>
+
+QString Config::runtimePath()
+{
+    static QString p = []() -> QString {
+        QByteArray path = qgetenv("QNVRUNTIME");
+        if (path.isNull())
+            path = QByteArrayLiteral(R"(@RUNTIME_PATH@)");
+        const QDir dir { path };
+        if (not dir.exists())
+            qFatal("Invalid runtime path!");
+        return dir.absolutePath();
+    }();
+    return p;
+}
