@@ -6,6 +6,7 @@
 #include <QProcess>
 #include "msgpack_view/msgpack_view.hpp"
 #include "qnv/Unicode.hpp"
+#include "qnv/Config.hpp"
 
 // TODO: refactor this mess
 
@@ -44,31 +45,47 @@ void NvimProcess::start()
 void NvimProcess::onStarted()
 {
     std::cerr << "nvim started\n";
-    msgpack::sbuffer buf;
-    msgpack::packer<msgpack::sbuffer> pk { &buf };
-    pk.pack_array(4);
-    pk.pack_int(0);
-    pk.pack_uint32(1);
-    pk.pack("nvim_ui_attach"sv);
-    pk.pack_array(3);
-    pk.pack_int64(60);
-    pk.pack_int64(20);
-    pk.pack_map(3);
-    pk.pack("rgb"sv);
-    pk.pack(true);
-    pk.pack("ext_hlstate"sv);
-    pk.pack(true);
-    pk.pack("ext_multigrid"sv);
-    pk.pack(true);
-    // pk.pack("ext_cmdline"sv);
-    // pk.pack(true);
-    // pk.pack("ext_messages"sv);
-    // pk.pack(true);
-    // pk.pack("ext_tabline"sv);
-    // pk.pack(true);
-    // pk.pack("ext_popupmenu"sv);
-    // pk.pack(true);
-    d->mProcess.write(buf.data(), buf.size());
+
+    {
+        msgpack::sbuffer buf;
+        msgpack::packer<msgpack::sbuffer> pk { &buf };
+        pk.pack_array(4);
+        pk.pack_int(0);
+        pk.pack_uint32(1);
+        pk.pack("nvim_exec_lua"sv);
+        pk.pack_array(2);
+        pk.pack(QStringLiteral("dofile([[%1/nvim/init.lua]])").arg(Config::runtimePath()).toStdString());
+        pk.pack_array(0);
+        d->mProcess.write(buf.data(), buf.size());
+    }
+
+    {
+        msgpack::sbuffer buf;
+        msgpack::packer<msgpack::sbuffer> pk { &buf };
+        pk.pack_array(4);
+        pk.pack_int(0);
+        pk.pack_uint32(1);
+        pk.pack("nvim_ui_attach"sv);
+        pk.pack_array(3);
+        pk.pack_int64(60);
+        pk.pack_int64(20);
+        pk.pack_map(3);
+        pk.pack("rgb"sv);
+        pk.pack(true);
+        pk.pack("ext_hlstate"sv);
+        pk.pack(true);
+        pk.pack("ext_multigrid"sv);
+        pk.pack(true);
+        // pk.pack("ext_cmdline"sv);
+        // pk.pack(true);
+        // pk.pack("ext_messages"sv);
+        // pk.pack(true);
+        // pk.pack("ext_tabline"sv);
+        // pk.pack(true);
+        // pk.pack("ext_popupmenu"sv);
+        // pk.pack(true);
+        d->mProcess.write(buf.data(), buf.size());
+    }
 }
 
 void NvimProcess::sendInput(const QString& key)
@@ -128,16 +145,42 @@ void NvimProcess::onReadyRead()
             if (args.empty())
                 continue;
             auto type = args[0].as<Integer>();
-            if (type == 1) {
+            if (type == 0) {
+                // request
+                if (args.size() != 4)
+                    continue;
+
+                auto id = args[1].as<int64_t>();
+                if (id < 0 || id > std::numeric_limits<uint32_t>::max())
+                    continue;
+
+                auto method = args[2].as<std::string_view>();
+                // auto params = args[3].as<msgpack_view::array_view>();
+                std::cerr << "received request: " << method << ' ' << args[3] << '\n';
+
+                msgpack::sbuffer buf;
+                msgpack::packer<msgpack::sbuffer> pk { &buf };
+                pk.pack_array(4);
+                pk.pack_int(1);
+                pk.pack_uint32(id);
+                pk.pack_nil();
+                pk.pack_nil();
+                d->mProcess.write(buf.data(), buf.size());
+            } else if (type == 1) {
+                // response
                 if (args.size() != 4)
                     continue;
                 d->parseResponse(args[1].as<Integer>(), args[2], args[3]);
             } else if (type == 2) {
+                // notification
                 if (args.size() != 3)
                     continue;
-                if (args[1].as<std::string_view>() != "redraw"sv)
-                    continue;
-                d->parseNotification(*this, args[2].as<msgpack_view::array_view>());
+                auto method = args[1].as<std::string_view>();
+                if (method == "redraw"sv) {
+                    d->parseNotification(*this, args[2].as<msgpack_view::array_view>());
+                } else if (method == "qnv"sv) {
+                    std::cerr << "received notification: " << obj << '\n';
+                }
             } else {
                 std::cerr << "invalid message type\n";
             }
