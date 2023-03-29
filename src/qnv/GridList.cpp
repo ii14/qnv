@@ -22,8 +22,8 @@ std::pair<Grid*, bool> GridList::add(int64_t id)
         if (grid->mId == id)
             return { grid, false };
     auto* grid = new Grid(this);
-    // TODO: id=1 goes on the bottom, msg grid goes on the top
     grid->mId = id;
+    grid->setZIndex(id == 1 ? -1 : 0); // global grid id=1 is always at the bottom
     beginInsertRows({}, mItems.size(), mItems.size());
     mItems.push_back(grid);
     endInsertRows();

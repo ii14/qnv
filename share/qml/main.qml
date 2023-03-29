@@ -22,6 +22,7 @@ Window {
             height: grid.gridHeight * gSession.cellHeight
             x: grid.winX * gSession.cellWidth + xOffset
             y: grid.winY * gSession.cellHeight + yOffset
+            z: grid.zIndex
         }
     }
 

@@ -18,6 +18,9 @@ class Grid : public QObject
     Q_PROPERTY(int gridHeight READ gridHeight NOTIFY gridSizeChanged)
     Q_PROPERTY(int winX READ winX NOTIFY winPosChanged)
     Q_PROPERTY(int winY READ winY NOTIFY winPosChanged)
+    Q_PROPERTY(int winY READ winY NOTIFY winPosChanged)
+    Q_PROPERTY(qint64 id READ id CONSTANT)
+    Q_PROPERTY(qint64 zIndex READ zIndex NOTIFY zIndexChanged)
 
 public:
     explicit Grid(QObject* parent = nullptr);
@@ -37,14 +40,22 @@ public:
     void clear();
     void setHidden(bool hidden);
 
+    qint64 id() const { return mId; }
+    qint64 zIndex() const { return mZIndex; }
+    void setZIndex(qint64 zindex);
+
 signals:
     void gridSizeChanged();
     void winPosChanged();
     void hiddenChanged();
+    void zIndexChanged();
 
 public:
     // TODO: z index
-    int64_t mId { -1 }; // TODO: implement
+    qint64 mId { -1 }; // TODO: implement
+    qint64 mZIndex { -1 };
+    qint64 mAnchorGrid { -1 };
+
     std::vector<GridCell> mGridCells;
     size_t mGridWidth { 0 };
     size_t mGridHeight { 0 };

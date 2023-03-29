@@ -54,6 +54,15 @@ void Grid::setMsgPos(int y)
     setHidden(false);
     mWinY = y;
     emit winPosChanged();
+    setZIndex(200); // message grid is always zindex=200
+}
+
+void Grid::setZIndex(qint64 zindex)
+{
+    if (mZIndex == zindex)
+        return;
+    mZIndex = zindex;
+    emit zIndexChanged();
 }
 
 void Grid::onGridLine(const GridLine& d)
