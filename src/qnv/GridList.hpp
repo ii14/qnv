@@ -17,9 +17,9 @@ class GridList : public QAbstractListModel
 public:
     explicit GridList(QObject* parent = nullptr);
 
-    [[nodiscard]] Grid* get(int64_t id);
-    std::pair<Grid*, bool> add(int64_t id);
-    bool remove(int64_t id);
+    [[nodiscard]] Q_INVOKABLE Grid* get(qint64 id);
+    std::pair<Grid*, bool> add(qint64 id);
+    bool remove(qint64 id);
 
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;

@@ -18,6 +18,7 @@ int main(int argc, char** argv)
     QQmlApplicationEngine engine;
     QQmlContext* ctx = engine.rootContext();
     qmlRegisterType<GridRenderer>("QNV", 1, 0, "GridRenderer");
+    qmlRegisterUncreatableMetaObject(Qnv::staticMetaObject, "Qnv", 1, 0, "Qnv", "Enums");
 
     // TODO: Use stdint.h types for msgpack only, and Qt's types everywhere
     // else, so these don't have to be registered in the type system.
@@ -112,6 +113,20 @@ int main(int argc, char** argv)
         Q_UNUSED(scrolled); // TODO: handle whatever this stuff is
         Q_UNUSED(sepChar);
         gridList->add(id).first->setMsgPos(row);
+    });
+
+    QObject::connect(nvim, &NvimProcess::winFloatPos, [&](Integer id, Window win, Anchor anchor, Integer anchorGrid, Float anchorRow, Float anchorCol, Boolean focusable, Integer zindex) {
+        Q_UNUSED(win);
+        Q_UNUSED(anchor);
+        if (Grid* grid = gridList->get(id)) {
+            grid->mAnchor = anchor;
+            grid->mAnchorGrid = anchorGrid;
+            grid->mAnchorRow = anchorRow;
+            grid->mAnchorCol = anchorCol;
+            grid->mFocusable = focusable;
+            emit grid->anchorChanged();
+            grid->setZIndex(zindex);
+        }
     });
 
     QObject::connect(nvim, &NvimProcess::gridCursorGoto, session, &Session::onGridCursorGoto);

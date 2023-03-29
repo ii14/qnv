@@ -4,7 +4,19 @@
 #include <string>
 #include <vector>
 #include <QtGlobal>
+#include <QObject>
 #include <QChar>
+
+namespace Qnv {
+Q_NAMESPACE
+enum class Anchor : uint8_t { NW, NE, SW, SE };
+Q_ENUM_NS(Anchor);
+} // namespace Qnv
+
+Q_DECLARE_METATYPE(Qnv::Anchor);
+
+// TODO(ms): fix this, it's just to get the enum visible in QML and not break the code
+using namespace Qnv;
 
 struct GridLine
 {

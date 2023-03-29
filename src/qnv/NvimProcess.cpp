@@ -324,7 +324,18 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
             emit self.winFloatPos(
                     ev[0].as<Integer>(),
                     ev[1].as<Window>(),
-                    ev[2].as<String>(),
+                    [&]() -> Anchor {
+                        auto v = ev[2].as<String>();
+                        if (v == "NW"sv)
+                            return Anchor::NW;
+                        if (v == "NE"sv)
+                            return Anchor::NE;
+                        if (v == "SW"sv)
+                            return Anchor::SW;
+                        if (v == "SE"sv)
+                            return Anchor::SE;
+                        return Anchor::NW;
+                    }(),
                     ev[3].as<Integer>(),
                     ev[4].as<Float>(),
                     ev[5].as<Float>(),

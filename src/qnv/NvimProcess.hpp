@@ -48,7 +48,7 @@ signals:
     void winFloatPos(
             Integer grid,
             Window win,
-            const String& anchor,
+            Anchor anchor,
             Integer anchorGrid,
             Float anchorRow,
             Float anchorCol,

@@ -7,7 +7,7 @@ GridList::GridList(QObject* parent)
 {
 }
 
-Grid* GridList::get(int64_t id)
+Grid* GridList::get(qint64 id)
 {
     // TODO: use a map, or binary search or something
     for (Grid* grid : mItems)
@@ -16,7 +16,7 @@ Grid* GridList::get(int64_t id)
     return nullptr;
 }
 
-std::pair<Grid*, bool> GridList::add(int64_t id)
+std::pair<Grid*, bool> GridList::add(qint64 id)
 {
     for (Grid* grid : mItems)
         if (grid->mId == id)
@@ -30,7 +30,7 @@ std::pair<Grid*, bool> GridList::add(int64_t id)
     return { grid, true };
 }
 
-bool GridList::remove(int64_t id)
+bool GridList::remove(qint64 id)
 {
     for (size_t i = 0; i < mItems.size(); ++i) {
         Grid* grid = mItems[i];
