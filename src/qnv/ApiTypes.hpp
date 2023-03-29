@@ -6,6 +6,7 @@
 using Integer = int64_t;
 using String = std::string;
 using Boolean = bool;
+using Float = double;
 
 struct Buffer
 {

@@ -50,9 +50,10 @@ signals:
             Window win,
             const String& anchor,
             Integer anchorGrid,
-            Integer anchorRow,
-            Integer anchorCol,
-            Boolean focusable);
+            Float anchorRow,
+            Float anchorCol,
+            Boolean focusable,
+            Integer zindex);
     void winViewport(
             Integer grid,
             Window win,

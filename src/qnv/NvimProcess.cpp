@@ -319,16 +319,17 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     } else if (eventName == "win_float_pos"sv) {
         for (auto it = args.begin() + 1; it != args.end(); ++it) {
             auto ev = it->as<msgpack_view::array_view>();
-            if (ev.size() < 7)
+            if (ev.size() < 8)
                 continue;
             emit self.winFloatPos(
                     ev[0].as<Integer>(),
                     ev[1].as<Window>(),
                     ev[2].as<String>(),
                     ev[3].as<Integer>(),
-                    ev[4].as<Integer>(),
-                    ev[5].as<Integer>(),
-                    ev[6].as<Boolean>());
+                    ev[4].as<Float>(),
+                    ev[5].as<Float>(),
+                    ev[6].as<Boolean>(),
+                    ev[7].as<Integer>());
         }
     } else if (eventName == "win_viewport"sv) {
         for (auto it = args.begin() + 1; it != args.end(); ++it) {
