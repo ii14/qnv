@@ -25,7 +25,7 @@ class Grid : public QObject
     Q_PROPERTY(qint64 anchorGrid READ anchorGrid NOTIFY anchorChanged)
     Q_PROPERTY(double anchorRow READ anchorRow NOTIFY anchorChanged)
     Q_PROPERTY(double anchorCol READ anchorCol NOTIFY anchorChanged)
-    Q_PROPERTY(double focusable READ focusable NOTIFY anchorChanged)
+    Q_PROPERTY(bool focusable READ focusable NOTIFY anchorChanged)
 
 public:
     explicit Grid(QObject* parent = nullptr);
@@ -54,7 +54,7 @@ public:
     qint64 anchorGrid() const { return mAnchorGrid; }
     double anchorRow() const { return mAnchorRow; }
     double anchorCol() const { return mAnchorCol; }
-    double focusable() const { return mFocusable; }
+    bool focusable() const { return mFocusable; }
 
 signals:
     void gridSizeChanged();

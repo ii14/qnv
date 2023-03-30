@@ -13,7 +13,7 @@ public:
     static QString translateKeyCode(const QKeyEvent& ev);
 
 protected:
-    bool eventFilter(QObject* watched, QEvent* event);
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 signals:
     void keyEvent(const QString& key);
