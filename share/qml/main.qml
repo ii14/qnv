@@ -44,6 +44,7 @@ Window {
             y: grid.anchorGrid < 1 ? yToPx(grid.winY)
                 : yAnchor(grid.anchorGrid, grid.anchorRow, grid.anchor, grid.gridHeight)
             z: grid.zIndex
+            visible: !grid.hidden
         }
     }
 

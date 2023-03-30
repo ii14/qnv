@@ -19,6 +19,7 @@ class Grid : public QObject
     Q_PROPERTY(int winX READ winX NOTIFY winPosChanged)
     Q_PROPERTY(int winY READ winY NOTIFY winPosChanged)
     Q_PROPERTY(qint64 id READ id CONSTANT)
+    Q_PROPERTY(bool hidden READ hidden NOTIFY hiddenChanged)
     Q_PROPERTY(qint64 zIndex READ zIndex NOTIFY zIndexChanged)
     Q_PROPERTY(Qnv::Anchor anchor READ anchor NOTIFY anchorChanged)
     Q_PROPERTY(qint64 anchorGrid READ anchorGrid NOTIFY anchorChanged)
@@ -43,6 +44,7 @@ public:
 
     void clear();
     void setHidden(bool hidden);
+    bool hidden() const { return mHidden; }
 
     qint64 id() const { return mId; }
     qint64 zIndex() const { return mZIndex; }
