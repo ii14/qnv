@@ -72,13 +72,10 @@ void Grid::onGridLine(const GridLine& d)
   size_t col = d.mColStart;
   for (const auto& c : d.mCells) {
     auto hl = c.mHlId;
-    QChar ch[2] = { 0, 0 };
-    ucsToUtf16(c.mChar, ch);
     for (int64_t i = 0; i < c.mRepeat && col < mGridWidth; ++i) {
       auto& cell = mGridCells[d.mRow * mGridWidth + col++];
+      cell.mCh = c.mChar;
       cell.mHl = hl;
-      cell.mCh[0] = ch[0];
-      cell.mCh[1] = ch[1];
     }
   }
 }

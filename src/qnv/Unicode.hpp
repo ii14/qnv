@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string_view>
+#include <array>
 #include <QChar>
 
 /// Invalid unicode codepoint
@@ -16,6 +17,6 @@ static constexpr uint32_t kInvalidCodepoint = 0x80000000;
 /// @param[in]  ucs Unicode character
 /// @param[out] out Output buffer
 /// @return Length of the buffer
-unsigned ucsToUtf16(uint32_t ucs, QChar out[2]);
+unsigned ucsToUtf16(uint32_t ucs, std::array<QChar, 2>& out);
 
 // vim: tw=100 sw=2 sts=2 et

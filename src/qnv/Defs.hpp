@@ -36,7 +36,7 @@ struct GridLine
 struct GridCell
 {
   GridCell() { }
-  QChar mCh[2] { 0, 0 }; ///< Character
+  uint32_t mCh { 0 }; ///< Character
   uint32_t mHl { 0 }; ///< Highlight group
 };
 

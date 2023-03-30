@@ -4,6 +4,7 @@
 #include <QGlyphRun>
 
 #include "qnv/Grid.hpp"
+#include "qnv/Unicode.hpp"
 
 GridRenderer::GridRenderer(QQuickItem* parent) : QQuickPaintedItem(parent)
 {
@@ -115,7 +116,9 @@ void GridRenderer::paint(QPainter* p)
 
     uint32_t glyphIndex = 0;
     int numGlyphs = 1;
-    const bool res = rawFont.glyphIndexesForChars(cell.mCh, 1, &glyphIndex, &numGlyphs);
+    std::array<QChar, 2> ch;
+    ucsToUtf16(cell.mCh, ch);
+    const bool res = rawFont.glyphIndexesForChars(ch.data(), 1, &glyphIndex, &numGlyphs);
     Q_ASSERT(res);
     Q_ASSERT(numGlyphs == 1);
     const QPointF glyphPos { 0, baseline };
