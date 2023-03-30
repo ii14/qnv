@@ -90,7 +90,7 @@ signals:
 
   void msgShow(const String& kind,
                const std::vector<std::pair<Integer, String>>& content,
-               Boolean replace_last);
+               Boolean replaceLast);
   void msgClear();
   void msgShowcmd(const std::vector<std::pair<Integer, String>>& content);
   void msgShowmode(const std::vector<std::pair<Integer, String>>& content);

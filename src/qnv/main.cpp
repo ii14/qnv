@@ -53,7 +53,7 @@ int main(int argc, char** argv)
   QObject::connect(
       &engine, &QQmlApplicationEngine::objectCreated, &app,
       [url](QObject* obj, const QUrl& objUrl) {
-        if (!obj && url == objUrl)
+        if (obj == nullptr && url == objUrl)
           QCoreApplication::exit(-1);
       },
       Qt::QueuedConnection);
@@ -140,15 +140,15 @@ int main(int argc, char** argv)
 
   nvim->start();
 
-  return app.exec();
+  return QGuiApplication::exec();
 }
 
-extern "C" const char* __ubsan_default_options()
+extern "C" const char* __ubsan_default_options() // NOLINT
 {
   return "print_stacktrace=1";
 }
 
-extern "C" const char* __asan_default_options()
+extern "C" const char* __asan_default_options() // NOLINT
 {
   return "detect_leaks=0,halt_on_error=1";
 }

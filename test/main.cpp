@@ -7,7 +7,7 @@ int main(int argc, char** argv)
   return Catch::Session().run(argc, argv);
 }
 
-extern "C" const char* __ubsan_default_options()
+extern "C" const char* __ubsan_default_options() // NOLINT
 {
   return "print_stacktrace=1";
 }

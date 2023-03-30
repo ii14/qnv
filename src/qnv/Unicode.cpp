@@ -4,10 +4,11 @@ uint32_t utf8toUcs(std::string_view str)
 {
   if (str.empty())
     return kInvalidCodepoint;
-  auto* d = reinterpret_cast<const uint8_t*>(str.data());
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): reinterpret between signed/unsigned is fine
+  const auto* d = reinterpret_cast<const uint8_t*>(str.data());
   if (d[0] < 0x80) {
     return d[0];
-  } else if (d[0] < 0xC2) {
+  } else if (d[0] < 0xC2) { // NOLINT(bugprone-branch-clone)
     return kInvalidCodepoint;
   } else if (d[0] < 0xE0) {
     if (str.size() < 2)

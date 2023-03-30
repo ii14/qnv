@@ -20,7 +20,7 @@ struct NvimProcess::Private
 
   void parseResponse(Integer id, msgpack_view::object_view error, msgpack_view::object_view result);
   void parseNotification(NvimProcess& self, msgpack_view::array_view events);
-  void parseEvent(NvimProcess& self, msgpack_view::array_view data);
+  void parseEvent(NvimProcess& self, msgpack_view::array_view args);
 };
 
 NvimProcess::NvimProcess(QObject* parent) : QObject(parent), d(new Private)
@@ -240,7 +240,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
         rCell.mHlId = rHl;
         if (cell.size() >= 3)
           rCell.mRepeat = cell[2].as<Integer>();
-        rLine.mCells.emplace_back(std::move(rCell));
+        rLine.mCells.emplace_back(rCell);
       }
       res.emplace_back(std::move(rLine));
     }
@@ -354,11 +354,11 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
       if (ev.size() < 4)
         continue;
       auto id = ev[0].as<Integer>();
-      auto rgb_attr = ev[1].as<msgpack_view::map_view>();
+      auto rgbAttr = ev[1].as<msgpack_view::map_view>();
       // auto cterm_attr = item[2].as<msgpack_view::map_view>();
       // auto info = item[3].as<msgpack_view::array_view>();
       HlGroup hl;
-      for (auto it : rgb_attr) {
+      for (auto it : rgbAttr) {
         auto key = it.first.as<std::string_view>();
         auto val = it.second;
         if (key == "foreground"sv) {

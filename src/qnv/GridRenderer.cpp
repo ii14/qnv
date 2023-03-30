@@ -15,7 +15,7 @@ void GridRenderer::setGrid(Grid* grid)
 {
   if (mGrid == grid)
     return;
-  if (mGrid)
+  if (not mGrid.isNull())
     disconnect(mGrid, nullptr, this, nullptr);
   mGrid = grid;
   if (grid != nullptr) {
@@ -28,7 +28,7 @@ void GridRenderer::setSession(Session* session)
 {
   if (mSession == session)
     return;
-  if (mSession)
+  if (not mSession.isNull())
     disconnect(mSession, nullptr, this, nullptr);
   mSession = session;
   if (session != nullptr) {
@@ -66,9 +66,9 @@ void GridRenderer::paint(QPainter* p)
   // JetBrains Mono reports a large max width and correct average width, but tewi
   // reports a very large average width and correct max width. Use whatever is the
   // lowest. Maybe calculate the width from some glyph instead?
-  const auto width = int(std::min(rawFont.averageCharWidth(), rawFont.maxCharWidth()));
+  const auto width = static_cast<int>(std::min(rawFont.averageCharWidth(), rawFont.maxCharWidth()));
   const auto baseline = rawFont.ascent();
-  const auto height = int(baseline + rawFont.descent());
+  const auto height = static_cast<int>(baseline + rawFont.descent());
 
   uint32_t hl = 0; ///< Selected highlight group
   QColor fg = session->mFgColor; ///< Selected foreground color
@@ -135,7 +135,7 @@ void GridRenderer::paint(QPainter* p)
       p->fillRect(px, py, width, height, bg);
 
     // Draw a glyph
-    p->drawGlyphRun({ double(px), double(py) }, glyphRun);
+    p->drawGlyphRun({ static_cast<double>(px), static_cast<double>(py) }, glyphRun);
 
     // Draw the cursor
     // TODO: Cursor shapes

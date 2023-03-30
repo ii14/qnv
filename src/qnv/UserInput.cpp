@@ -131,6 +131,7 @@ bool UserInput::eventFilter(QObject* watched, QEvent* event)
 {
   if (event->type() != QEvent::KeyPress)
     return QObject::eventFilter(watched, event);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-static-cast-downcast): event type is checked above, should be safe
   const QString key = translateKeyCode(*static_cast<QKeyEvent*>(event));
   if (not key.isEmpty())
     emit keyEvent(key);

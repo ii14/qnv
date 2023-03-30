@@ -65,9 +65,9 @@ void Grid::setZIndex(qint64 zindex)
 
 void Grid::onGridLine(const GridLine& d)
 {
-  if (d.mRow < 0 || size_t(d.mRow) >= mGridHeight)
+  if (d.mRow < 0 || static_cast<size_t>(d.mRow) >= mGridHeight)
     return;
-  if (d.mColStart < 0 || size_t(d.mColStart) >= mGridWidth)
+  if (d.mColStart < 0 || static_cast<size_t>(d.mColStart) >= mGridWidth)
     return;
   size_t col = d.mColStart;
   for (const auto& c : d.mCells) {
@@ -93,17 +93,17 @@ void Grid::onGridScroll(
 
   if (mGridWidth == 0 || mGridHeight == 0)
     return;
-  if (top < 0 || top >= bot || size_t(bot) > mGridHeight)
+  if (top < 0 || top >= bot || static_cast<size_t>(bot) > mGridHeight)
     return;
-  if (left < 0 || left >= right || size_t(right) > mGridWidth)
+  if (left < 0 || left >= right || static_cast<size_t>(right) > mGridWidth)
     return;
-  if (size_t(std::abs(rows)) > mGridHeight)
+  if (static_cast<size_t>(std::abs(rows)) > mGridHeight)
     return;
 
   auto iter = [&](int64_t i) {
     auto src = mGridCells.begin() + (top + i) * mGridWidth;
     auto offset = top + i - rows;
-    if (offset >= 0 && offset < int64_t(mGridHeight)) {
+    if (offset >= 0 && offset < static_cast<int64_t>(mGridHeight)) {
       auto dst = mGridCells.begin() + offset * mGridWidth;
       std::move(src + left, src + right, dst + left);
     } else {

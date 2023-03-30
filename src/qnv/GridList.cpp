@@ -51,13 +51,13 @@ int GridList::rowCount(const QModelIndex& parent) const
 QVariant GridList::data(const QModelIndex& index, int role) const
 {
   const int idx = index.row();
-  if (idx < 0 || size_t(idx) >= mItems.size())
+  if (idx < 0 || static_cast<size_t>(idx) >= mItems.size())
     return {};
   Grid* dev = mItems[idx];
   if (role == Role::RoleGrid)
     return QVariant::fromValue(dev);
   if (role == Role::RoleId)
-    return quint64(dev->mId);
+    return static_cast<quint64>(dev->mId);
   return {};
 }
 
