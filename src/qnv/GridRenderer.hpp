@@ -8,29 +8,31 @@
 
 class GridRenderer : public QQuickPaintedItem
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    Q_PROPERTY(Grid* grid READ grid WRITE setGrid NOTIFY gridChanged)
-    Q_PROPERTY(Session* session READ session WRITE setSession NOTIFY sessionChanged)
+  Q_PROPERTY(Grid* grid READ grid WRITE setGrid NOTIFY gridChanged)
+  Q_PROPERTY(Session* session READ session WRITE setSession NOTIFY sessionChanged)
 
 public:
-    explicit GridRenderer(QQuickItem* parent = nullptr);
+  explicit GridRenderer(QQuickItem* parent = nullptr);
 
-    Grid* grid() const { return mGrid; }
-    void setGrid(Grid* grid);
-    Session* session() const { return mSession; }
-    void setSession(Session* session);
+  Grid* grid() const { return mGrid; }
+  void setGrid(Grid* grid);
+  Session* session() const { return mSession; }
+  void setSession(Session* session);
 
-    void paint(QPainter* p) override;
+  void paint(QPainter* p) override;
 
 public slots:
-    void flush() { update(); }
+  void flush() { update(); }
 
 signals:
-    void gridChanged();
-    void sessionChanged();
+  void gridChanged();
+  void sessionChanged();
 
 private:
-    QPointer<Grid> mGrid;
-    QPointer<Session> mSession;
+  QPointer<Grid> mGrid;
+  QPointer<Session> mSession;
 };
+
+// vim: tw=100 sw=2 sts=2 et

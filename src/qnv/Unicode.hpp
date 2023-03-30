@@ -17,3 +17,5 @@ static constexpr uint32_t kInvalidCodepoint = 0x80000000;
 /// @param[out] out Output buffer
 /// @return Length of the buffer
 unsigned ucsToUtf16(uint32_t ucs, QChar out[2]);
+
+// vim: tw=100 sw=2 sts=2 et
