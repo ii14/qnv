@@ -36,7 +36,9 @@ bool GridList::remove(qint64 id)
         Grid* grid = mItems[i];
         if (grid->mId != id)
             continue;
+        beginRemoveRows({}, i, i);
         mItems.erase(mItems.begin() + i);
+        endRemoveRows();
         delete grid;
         return true;
     }
