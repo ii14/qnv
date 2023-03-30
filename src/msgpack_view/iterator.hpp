@@ -7,49 +7,51 @@
 namespace msgpack_view {
 
 template <typename T, typename U>
-struct iterator
+struct Iterator
 {
-  T view;
-  size_t i;
+  T mV;
+  size_t mI;
 
+  // NOLINTBEGIN(readability-identifier-naming)
   using iterator_category = std::random_access_iterator_tag;
   using difference_type = ptrdiff_t;
   using value_type = U;
   using reference = value_type;
   struct pointer
   {
-    value_type view;
-    explicit pointer(value_type view) noexcept : view(view) { }
-    value_type operator*() noexcept { return view; }
-    value_type* operator->() noexcept { return &view; }
+    value_type mV;
+    explicit pointer(value_type view) noexcept : mV(view) { }
+    value_type operator*() noexcept { return mV; }
+    value_type* operator->() noexcept { return &mV; }
   };
+  // NOLINTEND(readability-identifier-naming)
 
-  explicit iterator(T view, size_t index) noexcept : view(view), i(index) { }
+  explicit Iterator(T view, size_t index) noexcept : mV(view), mI(index) { }
 
-  reference operator*() const noexcept { return view[i]; }
-  pointer operator->() const noexcept { return pointer { view[i] }; }
-  reference operator[](difference_type j) const noexcept { return view[i + j]; }
+  reference operator*() const noexcept { return mV[mI]; }
+  pointer operator->() const noexcept { return pointer { mV[mI] }; }
+  reference operator[](difference_type j) const noexcept { return mV[mI + j]; }
 
-  bool operator==(iterator b) const noexcept { return i == b.i; }
-  bool operator!=(iterator b) const noexcept { return i != b.i; }
-  bool operator<(iterator b) const noexcept { return i < b.i; }
-  bool operator<=(iterator b) const noexcept { return i <= b.i; }
-  bool operator>(iterator b) const noexcept { return i > b.i; }
-  bool operator>=(iterator b) const noexcept { return i >= b.i; }
+  bool operator==(Iterator b) const noexcept { return mI == b.mI; }
+  bool operator!=(Iterator b) const noexcept { return mI != b.mI; }
+  bool operator<(Iterator b) const noexcept { return mI < b.mI; }
+  bool operator<=(Iterator b) const noexcept { return mI <= b.mI; }
+  bool operator>(Iterator b) const noexcept { return mI > b.mI; }
+  bool operator>=(Iterator b) const noexcept { return mI >= b.mI; }
 
   // clang-format off
-  iterator& operator++() noexcept { ++i; return *this; }
-  iterator operator++(int) noexcept { iterator n = *this; ++i; return n; }
-  iterator& operator--() noexcept { --i; return *this; }
-  iterator operator--(int) noexcept { iterator n = *this; --i; return n; }
+  Iterator& operator++() noexcept { ++mI; return *this; }
+  Iterator operator++(int) noexcept { Iterator n = *this; ++mI; return n; }
+  Iterator& operator--() noexcept { --mI; return *this; }
+  Iterator operator--(int) noexcept { Iterator n = *this; --mI; return n; }
 
-  iterator& operator+=(difference_type j) noexcept { i += j; return *this; }
-  iterator& operator-=(difference_type j) noexcept { i -= j; return *this; }
+  Iterator& operator+=(difference_type j) noexcept { mI += j; return *this; }
+  Iterator& operator-=(difference_type j) noexcept { mI -= j; return *this; }
   // clang-format on
 
-  iterator operator+(difference_type j) const noexcept { return iterator { view, i + j }; }
-  iterator operator-(difference_type j) const noexcept { return iterator { view, i - j }; }
-  difference_type operator-(iterator j) const noexcept { return i - j.i; }
+  Iterator operator+(difference_type j) const noexcept { return Iterator { mV, mI + j }; }
+  Iterator operator-(difference_type j) const noexcept { return Iterator { mV, mI - j }; }
+  difference_type operator-(Iterator j) const noexcept { return mI - j.i; }
 };
 
 } // namespace msgpack_view

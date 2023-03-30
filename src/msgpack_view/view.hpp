@@ -6,18 +6,18 @@
 
 namespace msgpack_view {
 
-struct object_view;
-struct array_view;
-struct map_view;
-using str_view = std::string_view;
+struct View;
+struct ArrayView;
+struct MapView;
+using StrView = std::string_view;
 
 template <typename T>
 struct convert;
 
-struct object_view
+struct View
 {
-  const msgpack::object& ref;
-  object_view(const msgpack::object& v) : ref(v) { }
+  const msgpack::object& mRef;
+  explicit View(const msgpack::object& v) : mRef(v) { }
   template <typename T>
   T as() const
   {
@@ -26,69 +26,71 @@ struct object_view
   // TODO: is and to methods
 };
 
-inline std::ostream& operator<<(std::ostream& os, object_view view)
+inline std::ostream& operator<<(std::ostream& os, View view)
 {
-  return os << view.ref;
+  return os << view.mRef;
 }
 
-struct array_view
+struct ArrayView
 {
-  using value_type = object_view;
-  using size_type = size_t;
+  using value_type = View; // NOLINT(readability-identifier-naming)
+  using size_type = size_t; // NOLINT(readability-identifier-naming)
 
-  const msgpack::object_array& ref;
-  array_view(const msgpack::object_array& v) : ref(v) { }
+  const msgpack::object_array& mRef;
+  explicit ArrayView(const msgpack::object_array& v) : mRef(v) { }
 
-  size_type size() const noexcept { return ref.size; }
-  bool empty() const noexcept { return ref.size == 0; }
+  size_type size() const noexcept { return mRef.size; }
+  bool empty() const noexcept { return mRef.size == 0; }
   value_type operator[](size_type i) const noexcept;
   value_type at(size_type i) const;
 
-  using iterator = msgpack_view::iterator<array_view, value_type>;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  using iterator = msgpack_view::Iterator<ArrayView, value_type>;
   iterator begin() const noexcept { return iterator { *this, 0 }; }
   iterator end() const noexcept { return iterator { *this, size() }; }
 };
 
-struct map_view
+struct MapView
 {
-  using value_type = std::pair<object_view, object_view>;
-  using size_type = size_t;
+  using value_type = std::pair<View, View>; // NOLINT(readability-identifier-naming)
+  using size_type = size_t; // NOLINT(readability-identifier-naming)
 
-  const msgpack::object_map& ref;
-  map_view(const msgpack::object_map& v) : ref(v) { }
+  const msgpack::object_map& mRef;
+  explicit MapView(const msgpack::object_map& v) : mRef(v) { }
 
-  size_type size() const noexcept { return ref.size; }
-  bool empty() const noexcept { return ref.size == 0; }
+  size_type size() const noexcept { return mRef.size; }
+  bool empty() const noexcept { return mRef.size == 0; }
   value_type operator[](size_type i) const noexcept;
   value_type at(size_type i) const;
 
-  using iterator = msgpack_view::iterator<map_view, value_type>;
+  // NOLINTNEXTLINE(readability-identifier-naming)
+  using iterator = msgpack_view::Iterator<MapView, value_type>;
   iterator begin() const noexcept { return iterator { *this, 0 }; }
   iterator end() const noexcept { return iterator { *this, size() }; }
 };
 
-inline object_view array_view::operator[](size_t i) const noexcept
+inline View ArrayView::operator[](size_t i) const noexcept
 {
-  return ref.ptr[i];
+  return View { mRef.ptr[i] };
 }
 
-inline object_view array_view::at(size_t i) const
+inline View ArrayView::at(size_t i) const
 {
-  if (i < ref.size)
-    return ref.ptr[i];
-  throw msgpack_view::out_of_range {};
+  if (i < mRef.size)
+    return View { mRef.ptr[i] };
+  throw msgpack_view::OutOfRange {};
 }
 
-inline map_view::value_type map_view::operator[](size_t i) const noexcept
+inline MapView::value_type MapView::operator[](size_t i) const noexcept
 {
-  return { ref.ptr[i].key, ref.ptr[i].val };
+  return { View { mRef.ptr[i].key }, View { mRef.ptr[i].val } };
 }
 
-inline map_view::value_type map_view::at(size_t i) const
+inline MapView::value_type MapView::at(size_t i) const
 {
-  if (i < ref.size)
-    return { ref.ptr[i].key, ref.ptr[i].val };
-  throw msgpack_view::out_of_range {};
+  if (i < mRef.size)
+    return { View { mRef.ptr[i].key }, View { mRef.ptr[i].val } };
+  throw msgpack_view::OutOfRange {};
 }
 
 } // namespace msgpack_view

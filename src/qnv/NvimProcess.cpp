@@ -18,9 +18,9 @@ struct NvimProcess::Private
   QProcess mProcess;
   msgpack::unpacker mUnpacker;
 
-  void parseResponse(Integer id, msgpack_view::object_view error, msgpack_view::object_view result);
-  void parseNotification(NvimProcess& self, msgpack_view::array_view events);
-  void parseEvent(NvimProcess& self, msgpack_view::array_view args);
+  void parseResponse(Integer id, msgpack_view::View error, msgpack_view::View result);
+  void parseNotification(NvimProcess& self, msgpack_view::ArrayView events);
+  void parseEvent(NvimProcess& self, msgpack_view::ArrayView args);
 };
 
 NvimProcess::NvimProcess(QObject* parent) : QObject(parent), d(new Private)
@@ -140,7 +140,7 @@ void NvimProcess::onReadyRead()
   while (d->mUnpacker.next(res)) {
     const auto& obj = res.get();
     try {
-      auto args = msgpack_view::object_view { obj }.as<msgpack_view::array_view>();
+      auto args = msgpack_view::View { obj }.as<msgpack_view::ArrayView>();
       if (args.empty())
         continue;
       auto type = args[0].as<Integer>();
@@ -176,7 +176,7 @@ void NvimProcess::onReadyRead()
           continue;
         auto method = args[1].as<std::string_view>();
         if (method == "redraw"sv) {
-          d->parseNotification(*this, args[2].as<msgpack_view::array_view>());
+          d->parseNotification(*this, args[2].as<msgpack_view::ArrayView>());
         } else if (method == "qnv"sv) {
           std::cerr << "received notification: " << obj << '\n';
         }
@@ -191,18 +191,18 @@ void NvimProcess::onReadyRead()
 }
 
 void NvimProcess::Private::parseResponse(Integer id,
-                                         msgpack_view::object_view error,
-                                         msgpack_view::object_view result)
+                                         msgpack_view::View error,
+                                         msgpack_view::View result)
 {
   std::cerr << "response: " << id << ", " << error << ", " << result << '\n';
 }
 
-void NvimProcess::Private::parseNotification(NvimProcess& self, msgpack_view::array_view events)
+void NvimProcess::Private::parseNotification(NvimProcess& self, msgpack_view::ArrayView events)
 {
   for (auto event : events) {
     try {
       // std::cerr << ">> " << event << '\n';
-      parseEvent(self, event.as<msgpack_view::array_view>());
+      parseEvent(self, event.as<msgpack_view::ArrayView>());
     } catch (const std::exception& e) {
       std::cerr << "uncaught exception while parsing event: " << e.what() << '\n';
       std::cerr << "  event: " << event << '\n';
@@ -210,7 +210,7 @@ void NvimProcess::Private::parseNotification(NvimProcess& self, msgpack_view::ar
   }
 }
 
-void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_view args)
+void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::ArrayView args)
 {
   if (args.empty())
     return;
@@ -219,18 +219,18 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     std::vector<GridLine> res;
     res.reserve(args.size() - 1);
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 4)
         continue;
       GridLine rLine;
       rLine.mGrid = ev[0].as<Integer>();
       rLine.mRow = ev[1].as<Integer>();
       rLine.mColStart = ev[2].as<Integer>();
-      auto cells = ev[3].as<msgpack_view::array_view>();
+      auto cells = ev[3].as<msgpack_view::ArrayView>();
       rLine.mCells.reserve(cells.size());
       int32_t rHl = 0;
       for (auto it : cells) {
-        auto cell = it.as<msgpack_view::array_view>();
+        auto cell = it.as<msgpack_view::ArrayView>();
         if (cell.empty())
           continue;
         GridLine::Cell rCell;
@@ -246,12 +246,12 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
     emit self.gridLine(res);
   } else if (eventName == "grid_cursor_goto"sv) {
-    auto ev = args[args.size() - 1].as<msgpack_view::array_view>();
+    auto ev = args[args.size() - 1].as<msgpack_view::ArrayView>();
     if (ev.size() < 3)
       return;
     emit self.gridCursorGoto(ev[0].as<Integer>(), ev[1].as<Integer>(), ev[2].as<Integer>());
   } else if (eventName == "default_colors_set"sv) {
-    auto ev = args[args.size() - 1].as<msgpack_view::array_view>();
+    auto ev = args[args.size() - 1].as<msgpack_view::ArrayView>();
     if (ev.size() < 5)
       return;
     emit self.defaultColorsSet(static_cast<uint32_t>(ev[0].as<Integer>() & 0xFFFFFF),
@@ -261,7 +261,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
                                static_cast<int>(ev[4].as<Integer>()));
   } else if (eventName == "grid_scroll"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 7)
         continue;
       emit self.gridScroll(ev[0].as<Integer>(), ev[1].as<Integer>(), ev[2].as<Integer>(),
@@ -270,28 +270,28 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "grid_resize"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 3)
         continue;
       emit self.gridResize(ev[0].as<Integer>(), ev[1].as<Integer>(), ev[2].as<Integer>());
     }
   } else if (eventName == "grid_clear"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.gridClear(ev[0].as<Integer>());
     }
   } else if (eventName == "grid_destroy"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.gridDestroy(ev[0].as<Integer>());
     }
   } else if (eventName == "win_pos"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 6)
         continue;
       emit self.winPos(ev[0].as<Integer>(), ev[1].as<Window>(), ev[2].as<Integer>(),
@@ -299,7 +299,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "win_float_pos"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 8)
         continue;
       emit self.winFloatPos(
@@ -321,7 +321,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "win_viewport"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 7)
         continue;
       emit self.winViewport(ev[0].as<Integer>(), ev[1].as<Window>(), ev[2].as<Integer>(),
@@ -330,20 +330,20 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "win_hide"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.winHide(ev[0].as<Integer>());
     }
   } else if (eventName == "win_close"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.winClose(ev[0].as<Integer>());
     }
   } else if (eventName == "msg_set_pos"sv) {
-    auto ev = args[args.size() - 1].as<msgpack_view::array_view>();
+    auto ev = args[args.size() - 1].as<msgpack_view::ArrayView>();
     if (ev.size() < 4)
       return;
     emit self.msgSetPos(ev[0].as<Integer>(), ev[1].as<Integer>(), ev[2].as<Boolean>(),
@@ -352,11 +352,11 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     std::vector<std::pair<uint32_t, HlGroup>> res;
     res.reserve(args.size() - 1);
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 4)
         continue;
       auto id = ev[0].as<Integer>();
-      auto rgbAttr = ev[1].as<msgpack_view::map_view>();
+      auto rgbAttr = ev[1].as<msgpack_view::MapView>();
       // auto cterm_attr = item[2].as<msgpack_view::map_view>();
       // auto info = item[3].as<msgpack_view::array_view>();
       HlGroup hl;
@@ -405,14 +405,14 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "hl_group_set"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 2)
         continue;
       emit self.hlGroupSet(ev[0].as<String>(), ev[1].as<Integer>());
     }
   } else if (eventName == "tabline_update"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 4)
         continue;
 
@@ -421,12 +421,12 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
 
       std::vector<std::pair<Tabpage, String>> rTabs;
       {
-        auto tabs = ev[1].as<msgpack_view::array_view>();
+        auto tabs = ev[1].as<msgpack_view::ArrayView>();
         rTabs.reserve(tabs.size());
         for (auto tab : tabs) {
           std::pair<Tabpage, String> r;
           uint8_t m = 0;
-          for (auto it2 : tab.as<msgpack_view::map_view>()) {
+          for (auto it2 : tab.as<msgpack_view::MapView>()) {
             auto k = it2.first.as<std::string_view>();
             if (k == "tab"sv) {
               m |= 0b01;
@@ -443,12 +443,12 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
 
       std::vector<std::pair<Buffer, String>> rBufs;
       {
-        auto bufs = ev[3].as<msgpack_view::array_view>();
+        auto bufs = ev[3].as<msgpack_view::ArrayView>();
         rBufs.reserve(bufs.size());
         for (auto buf : bufs) {
           std::pair<Buffer, String> r;
           uint8_t m = 0;
-          for (auto it2 : buf.as<msgpack_view::map_view>()) {
+          for (auto it2 : buf.as<msgpack_view::MapView>()) {
             auto k = it2.first.as<std::string_view>();
             if (k == "buffer"sv) {
               m |= 0b01;
@@ -467,46 +467,46 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     }
   } else if (eventName == "cmdline_show"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 6)
         continue;
       auto firstc = ev[2].as<std::string_view>();
-      char rFirstc = firstc.empty() ? '\0' : firstc.front();
+      const char rFirstc = firstc.empty() ? '\0' : firstc.front();
       emit self.cmdlineShow(ev[0].as<std::vector<std::pair<Integer, String>>>(),
                             ev[1].as<Integer>(), rFirstc, ev[3].as<String>(), ev[4].as<Integer>(),
                             ev[5].as<Integer>());
     }
   } else if (eventName == "cmdline_pos"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 2)
         continue;
       emit self.cmdlinePos(ev[0].as<Integer>(), ev[1].as<Integer>());
     }
   } else if (eventName == "cmdline_special_char"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 3)
         continue;
       emit self.cmdlineSpecialChar(ev[0].as<String>(), ev[1].as<Boolean>(), ev[2].as<Integer>());
     }
   } else if (eventName == "cmdline_hide"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.cmdlineHide(ev[0].as<Integer>());
     }
   } else if (eventName == "cmdline_block_show"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.cmdlineBlockShow(ev[0].as<std::vector<std::pair<Integer, String>>>());
     }
   } else if (eventName == "cmdline_block_append"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.cmdlineBlockAppend(ev[0].as<std::vector<std::pair<Integer, String>>>());
@@ -515,7 +515,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     emit self.cmdlineBlockHide();
   } else if (eventName == "msg_show"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 3)
         continue;
       emit self.msgShow(ev[0].as<String>(), ev[1].as<std::vector<std::pair<Integer, String>>>(),
@@ -525,28 +525,28 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     emit self.msgClear();
   } else if (eventName == "msg_showcmd"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.msgShowcmd(ev[0].as<std::vector<std::pair<Integer, String>>>());
     }
   } else if (eventName == "msg_showmode"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.msgShowmode(ev[0].as<std::vector<std::pair<Integer, String>>>());
     }
   } else if (eventName == "msg_ruler"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.msgRuler(ev[0].as<std::vector<std::pair<Integer, String>>>());
     }
   } else if (eventName == "msg_history_show"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.empty())
         continue;
       emit self.msgHistoryShow(ev[0].as<std::vector<std::pair<String, String>>>());
@@ -555,7 +555,7 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
     emit self.msgHistoryClear();
   } else if (eventName == "mode_change"sv) {
     for (auto it = args.begin() + 1; it != args.end(); ++it) {
-      auto ev = it->as<msgpack_view::array_view>();
+      auto ev = it->as<msgpack_view::ArrayView>();
       if (ev.size() < 2)
         continue;
       emit self.modeChange(ev[0].as<String>(), ev[1].as<Integer>());
@@ -587,12 +587,12 @@ void NvimProcess::Private::parseEvent(NvimProcess& self, msgpack_view::array_vie
   } else if (eventName == "wildmenu_hide"sv) {
     std::cerr << eventName << '\n'; // no args
   } else if (eventName == "set_title"sv) {
-    auto ev = args[args.size() - 1].as<msgpack_view::array_view>();
+    auto ev = args[args.size() - 1].as<msgpack_view::ArrayView>();
     if (ev.empty())
       return;
     emit self.setTitle(ev[0].as<String>());
   } else if (eventName == "set_icon"sv) {
-    auto ev = args[args.size() - 1].as<msgpack_view::array_view>();
+    auto ev = args[args.size() - 1].as<msgpack_view::ArrayView>();
     if (ev.empty())
       return;
     emit self.setIcon(ev[0].as<String>());

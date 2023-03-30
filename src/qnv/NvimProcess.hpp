@@ -110,7 +110,7 @@ private slots:
 private:
   struct Private;
   friend struct Private;
-  Private* d;
+  Private* d; // NOLINT(readability-identifier-naming)
 };
 
 // vim: tw=100 sw=2 sts=2 et

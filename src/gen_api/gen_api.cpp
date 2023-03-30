@@ -14,32 +14,32 @@ using namespace std::string_view_literals;
 
 struct Parameter
 {
-  std::string type;
-  std::string name;
+  std::string mType;
+  std::string mName;
 };
 
 struct Function
 {
-  std::vector<Parameter> parameters;
-  std::string return_type;
-  std::string name;
-  bool method { false };
-  int64_t since { -1 };
-  int64_t deprecated_since { -1 };
+  std::vector<Parameter> mParameters;
+  std::string mReturnType;
+  std::string mName;
+  bool mMethod { false };
+  int64_t mSince { -1 };
+  int64_t mDeprecatedSince { -1 };
 };
 
 struct UiEvent
 {
-  std::vector<Parameter> parameters;
-  std::string name;
-  int64_t since { -1 };
-  int64_t deprecated_since { -1 };
+  std::vector<Parameter> mParameters;
+  std::string mName;
+  int64_t mSince { -1 };
+  int64_t mDeprecatedSince { -1 };
 };
 
 
 inline std::ostream& operator<<(std::ostream& os, const Parameter& v)
 {
-  return os << v.type << ' ' << v.name;
+  return os << v.mType << ' ' << v.mName;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const std::vector<Parameter>& v)
@@ -54,12 +54,12 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<Parameter>& 
 
 inline std::ostream& operator<<(std::ostream& os, const Function& v)
 {
-  return os << v.return_type << ' ' << v.name << '(' << v.parameters << ')';
+  return os << v.mReturnType << ' ' << v.mName << '(' << v.mParameters << ')';
 }
 
 inline std::ostream& operator<<(std::ostream& os, const UiEvent& v)
 {
-  return os << v.name << '(' << v.parameters << ')';
+  return os << v.mName << '(' << v.mParameters << ')';
 }
 
 
@@ -90,117 +90,117 @@ static std::string parseType(std::string_view sv)
 }
 
 
-static void parseVersion(msgpack_view::object_view obj)
+static void parseVersion(msgpack_view::View obj)
 {
   std::cerr << "\nversion\n";
-  for (auto [k, v] : obj.as<msgpack_view::map_view>()) {
+  for (auto [k, v] : obj.as<msgpack_view::MapView>()) {
     std::cerr << "  " << k << ": " << v << '\n';
   }
 }
 
-static void parseFunctions(msgpack_view::object_view obj)
+static void parseFunctions(msgpack_view::View obj)
 {
   std::cerr << "\nfunctions\n";
-  for (auto it : obj.as<msgpack_view::array_view>()) {
+  for (auto it : obj.as<msgpack_view::ArrayView>()) {
     Function fn;
-    for (auto it2 : it.as<msgpack_view::map_view>()) {
+    for (auto it2 : it.as<msgpack_view::MapView>()) {
       auto key = it2.first.as<std::string_view>();
       auto val = it2.second;
       if (key == "parameters"sv) {
-        auto params = val.as<msgpack_view::array_view>();
-        fn.parameters.reserve(params.size());
+        auto params = val.as<msgpack_view::ArrayView>();
+        fn.mParameters.reserve(params.size());
         for (auto it3 : params) {
-          auto param = it3.as<msgpack_view::array_view>();
+          auto param = it3.as<msgpack_view::ArrayView>();
           if (param.empty()) {
             std::cerr << "invalid parameters size\n";
             continue;
           }
           Parameter p;
-          p.type = parseType(param[0].as<std::string_view>());
+          p.mType = parseType(param[0].as<std::string_view>());
           if (param.size() >= 2)
-            p.name = param[1].as<std::string>();
-          fn.parameters.emplace_back(std::move(p));
+            p.mName = param[1].as<std::string>();
+          fn.mParameters.emplace_back(std::move(p));
         }
       } else if (key == "return_type"sv) {
-        fn.return_type = parseType(val.as<std::string_view>());
+        fn.mReturnType = parseType(val.as<std::string_view>());
       } else if (key == "name"sv) {
-        fn.name = val.as<std::string>();
+        fn.mName = val.as<std::string>();
       } else if (key == "method"sv) {
-        fn.method = val.as<bool>();
+        fn.mMethod = val.as<bool>();
       } else if (key == "since"sv) {
-        fn.since = val.as<int64_t>();
+        fn.mSince = val.as<int64_t>();
       } else if (key == "deprecated_since"sv) {
-        fn.deprecated_since = val.as<int64_t>();
+        fn.mDeprecatedSince = val.as<int64_t>();
       }
     }
-    if (std::string_view { fn.name }.substr(0, 5) != "nvim_"sv)
+    if (std::string_view { fn.mName }.substr(0, 5) != "nvim_"sv)
       continue;
     std::cerr << "  " << fn << '\n';
   }
 }
 
-static void parseUiEvents(msgpack_view::object_view obj)
+static void parseUiEvents(msgpack_view::View obj)
 {
   std::cerr << "\nui events\n";
-  for (auto it : obj.as<msgpack_view::array_view>()) {
+  for (auto it : obj.as<msgpack_view::ArrayView>()) {
     UiEvent fn;
-    for (auto it2 : it.as<msgpack_view::map_view>()) {
+    for (auto it2 : it.as<msgpack_view::MapView>()) {
       auto key = it2.first.as<std::string_view>();
       auto val = it2.second;
       if (key == "parameters"sv) {
-        auto params = val.as<msgpack_view::array_view>();
-        fn.parameters.reserve(params.size());
+        auto params = val.as<msgpack_view::ArrayView>();
+        fn.mParameters.reserve(params.size());
         for (auto it3 : params) {
-          auto param = it3.as<msgpack_view::array_view>();
+          auto param = it3.as<msgpack_view::ArrayView>();
           if (param.empty()) {
             std::cerr << "invalid parameters size\n";
             continue;
           }
           Parameter p;
-          p.type = param[0].as<std::string>();
+          p.mType = param[0].as<std::string>();
           if (param.size() >= 2)
-            p.name = param[1].as<std::string>();
-          fn.parameters.emplace_back(std::move(p));
+            p.mName = param[1].as<std::string>();
+          fn.mParameters.emplace_back(std::move(p));
         }
       } else if (key == "name"sv) {
-        fn.name = val.as<std::string>();
+        fn.mName = val.as<std::string>();
       } else if (key == "since"sv) {
-        fn.since = val.as<int64_t>();
+        fn.mSince = val.as<int64_t>();
       } else if (key == "deprecated_since"sv) {
-        fn.deprecated_since = val.as<int64_t>();
+        fn.mDeprecatedSince = val.as<int64_t>();
       }
     }
     std::cerr << "  " << fn << '\n';
   }
 }
 
-static void parseUiOptions(msgpack_view::object_view obj)
+static void parseUiOptions(msgpack_view::View obj)
 {
   std::cerr << "\nui options\n";
-  for (auto it : obj.as<msgpack_view::array_view>()) {
+  for (auto it : obj.as<msgpack_view::ArrayView>()) {
     std::cerr << "  " << it << '\n';
   }
 }
 
-static void parseErrorTypes(msgpack_view::object_view obj)
+static void parseErrorTypes(msgpack_view::View obj)
 {
   std::cerr << "\nerror types\n";
-  for (auto [k, v] : obj.as<msgpack_view::map_view>()) {
+  for (auto [k, v] : obj.as<msgpack_view::MapView>()) {
     std::cerr << "  " << k << ": " << v << '\n';
   }
 }
 
-static void parseTypes(msgpack_view::object_view obj)
+static void parseTypes(msgpack_view::View obj)
 {
   std::cerr << "\ntypes\n";
-  for (auto [k, v] : obj.as<msgpack_view::map_view>()) {
+  for (auto [k, v] : obj.as<msgpack_view::MapView>()) {
     std::cerr << "  " << k << ": " << v << '\n';
   }
 }
 
-static void parseApi(msgpack_view::object_view obj)
+static void parseApi(msgpack_view::View obj)
 {
-  for (auto [k, v] : obj.as<msgpack_view::map_view>()) {
+  for (auto [k, v] : obj.as<msgpack_view::MapView>()) {
     auto key = k.as<std::string_view>();
     if (key == "version"sv) {
       parseVersion(v);
@@ -229,7 +229,7 @@ int main(int argc, char** argv)
   p.waitForFinished();
   const auto output = p.readAllStandardOutput();
   auto res = msgpack::unpack(output.data(), output.size());
-  parseApi(res.get());
+  parseApi(msgpack_view::View { res.get() });
 }
 
 // vim: tw=100 sw=2 sts=2 et

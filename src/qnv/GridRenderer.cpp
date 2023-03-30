@@ -115,7 +115,7 @@ void GridRenderer::paint(QPainter* p)
 
     uint32_t glyphIndex = 0;
     int numGlyphs = 1;
-    bool res = rawFont.glyphIndexesForChars(cell.mCh, 1, &glyphIndex, &numGlyphs);
+    const bool res = rawFont.glyphIndexesForChars(cell.mCh, 1, &glyphIndex, &numGlyphs);
     Q_ASSERT(res);
     Q_ASSERT(numGlyphs == 1);
     const QPointF glyphPos { 0, baseline };
@@ -142,7 +142,7 @@ void GridRenderer::paint(QPainter* p)
     if (session->mCursorGrid == grid->mId && x == session->mCursorCol && y == session->mCursorRow) {
       // To draw 1 pixel wide lines with antialiasing enabled,
       // the position has to point to the middle of the pixel.
-      QRectF rect(px + 0.5, py + 0.5, width - 1, height - 1);
+      const QRectF rect(px + 0.5, py + 0.5, width - 1, height - 1);
       p->drawRoundedRect(rect, 1.0, 1.0);
       // p->drawRect(rect);
     }

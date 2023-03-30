@@ -4,22 +4,35 @@
 
 namespace msgpack_view {
 
-struct exception : public std::exception
+struct Exception : public std::exception
 {
-  ~exception() override { }
+  Exception() { }
+  ~Exception() override { }
+  Exception(const Exception&) = default;
+  Exception(Exception&&) = default;
+  Exception& operator=(const Exception&) = default;
+  Exception& operator=(Exception&&) = default;
 };
 
-struct type_error : msgpack_view::exception
+struct TypeError : msgpack_view::Exception
 {
-  type_error() { }
-  ~type_error() override { }
+  TypeError() { }
+  ~TypeError() override { }
+  TypeError(const TypeError&) = default;
+  TypeError(TypeError&&) = default;
+  TypeError& operator=(const TypeError&) = default;
+  TypeError& operator=(TypeError&&) = default;
   const char* what() const noexcept override { return "msgpack_view type error"; }
 };
 
-struct out_of_range : msgpack_view::exception
+struct OutOfRange : msgpack_view::Exception
 {
-  out_of_range() { }
-  ~out_of_range() override { }
+  OutOfRange() { }
+  ~OutOfRange() override { }
+  OutOfRange(const OutOfRange&) = default;
+  OutOfRange(OutOfRange&&) = default;
+  OutOfRange& operator=(const OutOfRange&) = default;
+  OutOfRange& operator=(OutOfRange&&) = default;
   const char* what() const noexcept override { return "msgpack_view out of range"; }
 };
 
