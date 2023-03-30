@@ -19,9 +19,9 @@ void Session::setFont(const QFont& font)
 {
   mFont = font;
   const auto rawFont = QRawFont::fromFont(font);
-  mCellWidth = std::min(rawFont.averageCharWidth(), rawFont.maxCharWidth());
-  mCellBaseline = rawFont.ascent();
-  mCellHeight = mCellBaseline + rawFont.descent();
+  mCellWidth = static_cast<int>(std::min(rawFont.averageCharWidth(), rawFont.maxCharWidth()));
+  mCellBaseline = static_cast<int>(rawFont.ascent());
+  mCellHeight = mCellBaseline + static_cast<int>(rawFont.descent());
   emit fontChanged();
 }
 

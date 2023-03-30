@@ -23,7 +23,7 @@ struct Function
   std::vector<Parameter> parameters;
   std::string return_type;
   std::string name;
-  bool method;
+  bool method { false };
   int64_t since { -1 };
   int64_t deprecated_since { -1 };
 };
@@ -77,11 +77,11 @@ static std::string parseType(std::string_view sv)
     return std::string { *it };
   if (sv.substr(0, 8) == "ArrayOf(" && sv.back() == ')') {
     std::string s { sv };
-    for (size_t i = 0; i < s.size(); ++i) {
-      if (s[i] == '(') {
-        s[i] = '<';
-      } else if (s[i] == ')') {
-        s[i] = '>';
+    for (char& c : s) {
+      if (c == '(') {
+        c = '<';
+      } else if (c == ')') {
+        c = '>';
       }
     }
     return s;
@@ -111,7 +111,7 @@ static void parseFunctions(msgpack_view::object_view obj)
         fn.parameters.reserve(params.size());
         for (auto it3 : params) {
           auto param = it3.as<msgpack_view::array_view>();
-          if (param.size() < 1) {
+          if (param.empty()) {
             std::cerr << "invalid parameters size\n";
             continue;
           }
@@ -152,7 +152,7 @@ static void parseUiEvents(msgpack_view::object_view obj)
         fn.parameters.reserve(params.size());
         for (auto it3 : params) {
           auto param = it3.as<msgpack_view::array_view>();
-          if (param.size() < 1) {
+          if (param.empty()) {
             std::cerr << "invalid parameters size\n";
             continue;
           }

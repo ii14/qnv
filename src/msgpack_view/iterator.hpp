@@ -13,7 +13,7 @@ struct iterator
   size_t i;
 
   using iterator_category = std::random_access_iterator_tag;
-  using difference_type = std::make_signed_t<size_t>; // because ssize_t is posix
+  using difference_type = ptrdiff_t;
   using value_type = U;
   using reference = value_type;
   struct pointer

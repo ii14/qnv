@@ -38,8 +38,8 @@ public:
   void onGridScroll(
       int64_t top, int64_t bot, int64_t left, int64_t right, int64_t rows, int64_t cols);
 
-  int gridWidth() const { return mGridWidth; }
-  int gridHeight() const { return mGridHeight; }
+  int gridWidth() const { return static_cast<int>(mGridWidth); }
+  int gridHeight() const { return static_cast<int>(mGridHeight); }
   int winX() const { return mWinX; }
   int winY() const { return mWinY; }
 

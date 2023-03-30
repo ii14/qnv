@@ -21,7 +21,8 @@ std::pair<Grid*, bool> GridList::add(qint64 id)
   auto* grid = new Grid(this);
   grid->mId = id;
   grid->setZIndex(id == 1 ? -1 : 0); // global grid id=1 is always at the bottom
-  beginInsertRows({}, mItems.size(), mItems.size());
+  const auto idx = static_cast<int>(mItems.size());
+  beginInsertRows({}, idx, idx);
   mItems.push_back(grid);
   endInsertRows();
   return { grid, true };
@@ -33,8 +34,9 @@ bool GridList::remove(qint64 id)
     Grid* grid = mItems[i];
     if (grid->mId != id)
       continue;
-    beginRemoveRows({}, i, i);
-    mItems.erase(mItems.begin() + i);
+    const auto idx = static_cast<int>(i);
+    beginRemoveRows({}, idx, idx);
+    mItems.erase(mItems.begin() + static_cast<ptrdiff_t>(i));
     endRemoveRows();
     delete grid;
     return true;
@@ -45,7 +47,7 @@ bool GridList::remove(qint64 id)
 int GridList::rowCount(const QModelIndex& parent) const
 {
   Q_UNUSED(parent);
-  return mItems.size();
+  return static_cast<int>(mItems.size());
 }
 
 QVariant GridList::data(const QModelIndex& index, int role) const

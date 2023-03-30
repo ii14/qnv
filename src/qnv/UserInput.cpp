@@ -80,7 +80,7 @@ QString UserInput::translateKeyCode(const QKeyEvent& ev)
   bool keycode = false;
   QString text;
 
-  if (mods & Qt::KeypadModifier) {
+  if (mods.testFlag(Qt::KeypadModifier)) {
     auto it = kNumpadKeys.find(ev.key());
     if (it == kNumpadKeys.end())
       return {};
@@ -91,7 +91,7 @@ QString UserInput::translateKeyCode(const QKeyEvent& ev)
     if (it != kSpecialKeys.end()) {
       text = it.value();
       keycode = true;
-    } else if (mods & Qt::ShiftModifier) {
+    } else if (mods.testFlag(Qt::ShiftModifier)) {
       text = ev.text();
     } else {
       text = ev.text().toLower();
@@ -102,17 +102,17 @@ QString UserInput::translateKeyCode(const QKeyEvent& ev)
     return {};
 
   QString mod;
-  if (mods & Qt::ControlModifier)
+  if (mods.testFlag(Qt::ControlModifier))
     mod += "C-";
-  if (mods & Qt::AltModifier)
+  if (mods.testFlag(Qt::AltModifier))
     mod += "A-";
-  if (mods & Qt::MetaModifier)
+  if (mods.testFlag(Qt::MetaModifier))
     mod += "D-";
-  if (mods & Qt::ShiftModifier && (keycode || (not keycode && not mod.isNull())))
+  if (mods.testFlag(Qt::ShiftModifier) && (keycode || (not keycode && not mod.isNull())))
     mod += "S-";
   if (not mod.isNull()) {
     if (not keycode) {
-      if (mods & Qt::ShiftModifier) {
+      if (mods.testFlag(Qt::ShiftModifier)) {
         text = QChar(ev.key());
       } else {
         text = QChar(ev.key()).toLower();
